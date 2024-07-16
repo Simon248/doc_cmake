@@ -1,0 +1,262 @@
+=================================
+planning serveur exemple
+=================================
+
+.. code-block:: cmake
+
+    cmake_minimum_required(VERSION 3.5.0)
+
+    # Extract package name and version
+    find_package(ros_industrial_cmake_boilerplate REQUIRED)
+    extract_package_metadata(pkg)
+    project(${pkg_extracted_name} VERSION ${pkg_extracted_version} LANGUAGES CXX)
+
+    # ROS
+    find_package(ament_cmake REQUIRED)
+    find_package(rclcpp REQUIRED)
+    find_package(tf2_eigen REQUIRED)
+    find_package(tf2_ros REQUIRED)
+    # tesseract
+    find_package(tesseract_command_language REQUIRED)
+    find_package(tesseract_common REQUIRED)
+    find_package(tesseract_motion_planners REQUIRED)
+    find_package(tesseract_task_composer REQUIRED)
+    # tesseract_ros2
+    find_package(tesseract_monitoring REQUIRED)
+    find_package(tesseract_msgs REQUIRED)
+    find_package(tesseract_rosutils REQUIRED)
+
+    # Load variable for clang tidy args, compiler options and cxx version
+    tesseract_variables()
+
+    add_library(${PROJECT_NAME} SHARED
+    src/tesseract_planning_server.cpp)
+    target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        rclcpp::rclcpp
+        tf2_ros::tf2_ros
+
+        tesseract::tesseract_command_language
+        tesseract::tesseract_common
+        tesseract::tesseract_motion_planners_core
+        tesseract::tesseract_motion_planners_simple
+        tesseract::tesseract_motion_planners_trajopt
+        tesseract::tesseract_motion_planners_trajopt_ifopt
+        tesseract::tesseract_motion_planners_ompl
+        tesseract::tesseract_motion_planners_descartes
+        tesseract::tesseract_task_composer
+        tesseract::tesseract_task_composer_planning
+        tesseract::tesseract_task_composer_planning_nodes
+
+        ${tesseract_msgs_TARGETS}
+        tesseract_monitoring::tesseract_monitoring_environment
+        tesseract_rosutils::tesseract_rosutils
+    PRIVATE
+        ${tf2_eigen_TARGETS}
+    )
+    target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+    target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARTitre de la note
+    #   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    #   "$<INSTALL_INTERFACE:include>")
+    # target_include_directories(${PROJECT_NAME}_raster_example SYSTEM PUBLIC
+    #   ${catkin_tesseract_variables()INCLUDE_DIRS})
+
+    # Mark libraries for installation
+    install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-targets
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+    )
+
+    # Mark executables for installation
+    install(
+    TARGETS
+    ${PROJECT_NAME}_node
+    #  ${PROJECT_NAME}_raster_example
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+    )
+
+    install(DIRECTORY include/${PROJECT_NAME} DESTINATION include)
+    install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+
+    ament_export_targets(${PROJECT_NAME}-targets HAS_LIBRARY_TARGET)
+    ament_export_dependencies(
+    rclcpp
+    tf2_ros
+    tesseract_msgs
+    )
+    ament_package()
+
+
+find_package
+----------------
+
+.. code-block:: cmake
+
+    # ROS
+    find_package(ament_cmake REQUIRED)
+    find_package(rclcpp REQUIRED)
+    find_package(tf2_eigen REQUIRED)
+    find_package(tf2_ros REQUIRED)
+    # tesseract
+    find_package(tesseract_command_language REQUIRED)
+    find_package(tesseract_common REQUIRED)
+    find_package(tesseract_motion_planners REQUIRED)
+    find_package(tesseract_task_composer REQUIRED)
+    # tesseract_ros2
+    find_package(tesseract_monitoring REQUtarget_link_librariesIRED)
+    find_package(tesseract_msgs REQUIRED)
+    find_package(tesseract_rosutils REQUIRED)
+
+
+Questions:
+~~~~~~~~~~~~~~~
+
+* Que fait Cmake lors de find_package
+    - il cherche les cmakelist des paquets mentioné?
+
+* Comment sait il où chercher les paquets?
+    - pour ROS il les trouve dans le path, parceque j'ai sourcé.
+    - pour tesseract 
+
+Syntaxe:
+~~~~~~~~~~~~~~~
+
+.. code-block:: cmake
+
+    find_package(<PackageName> [version] [REQUIRED] [COMPONENTS components...])
+
+* **PackageName** : en CamelCase
+* **version** : (optionel) version minimuale requise
+* **REQUIRED** : (optionel) levera une erreur si pas trouvé
+* **COMPONENTS** (optionel) Liste des composants du paquet qui seront utilisés.
+
+Comportement:
+~~~~~~~~~~~~~~~
+* recherche dans les repertoires standard (/usr/lib , /usr/local/lib)
+* | utilisation de script de recherche (Gal nommé Find<PackageName>.cmake)
+  | ces script peuvent etre fournis par cmake ou par le paquet a installer.
+* définition des variables: ces variables sont relatives aux dossier d'include , aux bibliothèques...
+
+
+Call Macro
+----------------
+
+.. code-block:: cmake
+
+    tesseract_variables()
+
+* | Appel à une macro définie dans tesseract_common/cmake/tesseract_macros.cmake
+  | Cette amcro est connue car on a fait find package tesseract_common 
+
+
+add_librairy
+----------------
+
+.. code-block:: cmake
+
+    add_library(${PROJECT_NAME} SHARED
+        src/tesseract_planning_server.cpp)
+
+* crée une librarie partagée (dynamique).
+
+.. code-block:: cmake
+
+    add_library(<name> [STATIC | SHARED | MODULE]
+                [EXCLUDE_FROM_ALL]
+                source1 source2 ... sourceN)
+
+* **STATIC / SHARED / MODULE :** : type de lib
+* **EXCLUDE_FROM_ALL :** (optionel) la librairie ne sera pas construite lors du make.
+* **source1 source2 source3 :** Liste des fichiers sources qui composent la lib
+
+
+target_link_libraries
+----------------
+
+.. code-block:: cmake
+
+    target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+            rclcpp::rclcpp
+            tf2_ros::tf2_ros
+
+            tesseract::tesseract_command_language
+            tesseract::tesseract_common
+            tesseract::tesseract_motion_planners_core
+            tesseract::ttarget_link_libraries(${PROJECT_NAME}
+        PUBLIC
+            rclcpp::rclcpp
+            tf2_ros::tf2_ros
+
+            tesseract::tesseract_task_composer_planning_nodes
+
+            ${tesseract_msgs_TARGETS}
+            tesseract_monitoring::tesseract_monitoring_environment
+            tesseract_rosutils::tesseract_rosutils
+        PRIVATE
+            ${tf2_eigen_TARGETS}
+        )
+
+* Spécifie les bibliothèque avec lesquelles un executable ou une bibliothèque doit être liée.
+
+.. code-block:: cmake
+
+    target_link_libraries(<target> [item1 [item2 [...]]]
+        [PRIVATE|PUBLIC|INTERFACE] [items2...])
+
+* **<target> :** nom de la cible (exec ou bibli)
+* **[item1 item2 item 3] :** une liste de bibliotheque ou de cible a lier avec la cible
+* **[PRIVATE|PUBLIC|INTERFACE] :** défini la visibilité des dépendance de lien.
+    - **PRIVATE :** dépendance nécéssaire pour la cible spécifié mais pas transmise à ceux qui lient cette cible.
+    - **PUBLIC :**  les dépendance de lien sont également transmise au cible qui lient cette cible.
+    - **INTERFACE :**  les dependance s de lien ne sont pas nécéssaire pour al cible. mais seront transmisent aux ciblent qui lien cette cible.
+
+
+target_compile_options
+----------------
+
+.. code-block:: cmake
+
+    target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+        target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+        target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+        target_include_directories(${PROJECT_NAME} PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>"
+        )
+
+add_executable
+----------------
+.. code-block:: cmake
+
+    add_executable(${PROJECT_NAME}_node src/tesseract_planning_server_node.cpp)
+
+
+target_link_libraries
+----------------
+
+.. code-block:: cmake
+
+    target_link_libraries(${PROJECT_NAME}_node PRIVATE ${PROJECT_NAME} ${catkin_LIBRARIES})
+
+target_compile_options
+----------------
+
+.. code-block:: cmake
+
+    target_compile_options(${PROJECT_NAME}_node PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+    target_clang_tidy(${PROJECT_NAME}_node ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+    target_cxx_version(${PROJECT_NAME}_node PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+
+target_include_directories
+----------------
+
+.. code-block:: cmake
+
+    target_include_directories(${PROJECT_NAME}_node PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
