@@ -175,7 +175,7 @@ add_librairy
 
 
 target_link_libraries
-----------------
+--------------------------------
 
 .. code-block:: cmake
 
